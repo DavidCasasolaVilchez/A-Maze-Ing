@@ -3,7 +3,7 @@ from Model import Panel
 
 
 def main() -> None:
-    args: ArgsParser = ArgsParser("amazing/config.txt")
+    args: ArgsParser = ArgsParser("config.txt")
     print(
         f"height {args.height}\n"
         f"width {args.width}\n"
