@@ -1,5 +1,5 @@
-from Model.Exceptions import InvalidArguments
-from Model.Enums import DisplayMode
+from Model.Exceptions.InvalidArguments import InvalidArguments
+from Model.Enums.DisplayMode import DisplayMode
 import sys
 
 

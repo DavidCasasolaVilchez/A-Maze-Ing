@@ -1,5 +1,5 @@
-from Model import Panel
-from Model import Cell
+from Model.Panel import Panel
+from Model.Cell import Cell
 
 
 def PanelToTxt(panel: Panel) -> None:
@@ -15,7 +15,7 @@ def PanelToTxt(panel: Panel) -> None:
         text.write("\n")
         text.write(", ".join(panel.start_cell.position), "\n")
         text.write(", ".join(panel.end_cell.position), "\n")
-        #TODO: write the steps to get from start to end
+        # TODO: write the steps to get from start to end
 
 
 def ParsePanel(cell: Cell) -> str:

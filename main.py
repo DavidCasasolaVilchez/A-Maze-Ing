@@ -1,29 +1,33 @@
 from Utils.ArgsParser import ArgsParser
-from Model import Panel
+from Model.Panel import Panel
 
 
 def main() -> None:
     args: ArgsParser = ArgsParser("config.txt")
-    print(
-        f"height {args.height}\n"
-        f"width {args.width}\n"
-        f"seed {args.seed}\n"
-        f"exit {args.exit}\n"
-        f"entry {args.entry}\n"
-        f"perfect {args.perfect}\n"
-        f"display_mode {args.display_mode}\n"
-        f"output_file {args.output_file}\n\n"
-    )
-    p: Panel = Panel.create_base(
+#    print(
+#        f"height {args.height}\n"
+#        f"width {args.width}\n"
+#        f"seed {args.seed}\n"
+#        f"exit {args.exit}\n"
+#        f"entry {args.entry}\n"
+#        f"perfect {args.perfect}\n"
+#        f"display_mode {args.display_mode}\n"
+#        f"output_file {args.output_file}\n\n"
+#    )
+    p: "Panel" = Panel.create_base(
         (args.height, args.width),
         args.perfect,
         args.entry,
         args.exit,
         args.seed,
     )
-    p.display_ascii()
-    print("\n")
+    # print("############### Laberinto base ###############\n\n")
+    # p.display_ascii()
     p.generate42()
+    # print("\n\n\n############### Laberinto base con 42 ###############\n\n")
+    # p.display_ascii()
+    print("\n\n\n############### Laberinto imperfecto ###############\n\n")
+    p.convert_to_base()
     p.display_ascii()
 
 

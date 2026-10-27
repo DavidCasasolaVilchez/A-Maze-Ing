@@ -1,4 +1,4 @@
-from Model.Enums import Cardinal
+from Model.Enums.Cardinal import Cardinal
 
 
 class Walls():
@@ -20,10 +20,10 @@ class Walls():
 
     def change_state(self, dir: Cardinal) -> None:
         if dir == Cardinal.N:
-            self.north = not self.north
+            self.north = False
         elif dir == Cardinal.E:
-            self.east = not self.east
+            self.east = False
         elif dir == Cardinal.W:
-            self.west = not self.west
+            self.west = False
         elif dir == Cardinal.S:
-            self.south = not self.south
+            self.south = False
