@@ -15,12 +15,14 @@ class Cell:
             type: TypeCell,
             state: Walls,
             map: "Panel",
-            view: bool
+            view: bool,
+            view_from_end: bool
             ):
         self.position: tuple[int, int] = position
         self.type: TypeCell = type
         self.state: Walls = state
         self.view: bool = view
+        self.view_from_end: bool = view_from_end
         self.map: "Panel" = map
 
     @staticmethod
@@ -31,6 +33,7 @@ class Cell:
             TypeCell.BASE,
             Walls.create_full(),
             map,
+            False,
             False
         )
 
