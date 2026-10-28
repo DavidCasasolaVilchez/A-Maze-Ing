@@ -2,7 +2,7 @@ from Model.Panel import Panel
 from Model.Cell import Cell
 
 
-def PanelToTxt(panel: Panel) -> None:
+def PanelToTxt(panel: Panel, steps: str) -> None:
     with open("result.txt", "w", encoding="utf-8"):
         pass
     for line in range(panel.size[0]):
@@ -13,9 +13,9 @@ def PanelToTxt(panel: Panel) -> None:
             text.write("\n")
     with open("result.txt", "a", encoding="utf-8") as text:
         text.write("\n")
-        text.write(", ".join(panel.start_cell.position), "\n")
-        text.write(", ".join(panel.end_cell.position), "\n")
-        # TODO: write the steps to get from start to end
+        text.write(str(panel.start_cell.position) + "    #entry (x,y)\n")
+        text.write(str(panel.end_cell.position) + "    #exit (x,y)\n")
+        text.write(steps + "\n")
 
 
 def ParsePanel(cell: Cell) -> str:

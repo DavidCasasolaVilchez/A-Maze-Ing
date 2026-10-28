@@ -8,14 +8,13 @@ def start_search(panel: Panel) -> str:
     end_steps: list[str] = [""]
     start_cells: list[tuple[Cell, bool]] = [(panel.start_cell, False)]
     end_cells: list[tuple[Cell, bool]] = [(panel.end_cell, False)]
-    solution: str = "None"
+    solution: str = ""
     common_cells: list[Cell] = []
 
     for i in range(panel.size[0]):
         for j in range(panel.size[1]):
             panel.map[i][j].view = False
     while not common_cells:
-        common_cells = exist_equal_cells(start_cells, end_cells)
         for i in range(len(start_steps)):
             if start_cells[i][1]:
                 continue
@@ -24,12 +23,13 @@ def start_search(panel: Panel) -> str:
             if end_cells[i][1]:
                 continue
             move_end(end_steps, end_cells, i)
-    for i in len(common_cells):
+            common_cells = exist_equal_cells(start_cells, end_cells)
+    for i in range(len(common_cells)):
         current: str = (
-            start_steps[start_cells.index(common_cells[i])]
-            + invert(end_cells.index(common_cells[i]))
+            start_steps[cells_only(start_cells).index((common_cells[i]))]
+            + invert(end_steps[cells_only(end_cells).index(common_cells[i])])
         )
-        if len(solution) > len(current):
+        if not solution or len(solution) > len(current):
             solution = current
     return solution
 
@@ -122,77 +122,5 @@ def exist_equal_cells(s_cells: list[tuple[Cell, bool]],
     return [cell for cell, _ in s_cells if cell.position in e_pos]
 
 
-def display_solution(panel: Panel, steps: str) -> None:
-    from Model.Exceptions.OffTheMap import OffTheMap
-    from Model.Enums.TypeCell import TypeCell
-    from Utils.Colors import CYAN, GREEN, RED, RESET, YELLOW
-    import sys
-    import time
-
-    direction_info: dict[str, tuple[Cardinal, str]] = {
-        "N": (Cardinal.N, "north"),
-        "E": (Cardinal.E, "east"),
-        "S": (Cardinal.S, "south"),
-        "W": (Cardinal.W, "west"),
-    }
-    if steps == "None":
-        raise ValueError("No solution was provided")
-
-    path_positions: list[tuple[int, int]] = [panel.start_cell.position]
-    current: Cell = panel.start_cell
-    for step_number, step in enumerate(steps, start=1):
-        if step not in direction_info:
-            raise ValueError(
-                f"Invalid direction at step {step_number}: {step}")
-        direction, wall_name = direction_info[step]
-        if getattr(current.state, wall_name):
-            raise ValueError(f"Step {step_number} crosses a wall")
-        try:
-            current = panel.get_cell(direction, current.position)
-        except OffTheMap as error:
-            raise ValueError(f"Step {step_number} leaves the maze") from error
-        if current.type == TypeCell.CLOSED42:
-            raise ValueError(f"Step {step_number} enters a closed cell")
-        path_positions.append(current.position)
-
-    def draw_frame(visited_positions: set[tuple[int, int]]) -> None:
-        print("\033[H\033[J", end="")
-        for row in panel.map:
-            top_line = ""
-            middle_line = ""
-            for cell in row:
-                top_line += "+"
-                top_line += "---" if cell.state.north else "   "
-            top_line += "+"
-
-            for cell in row:
-                middle_line += "|" if cell.state.west else " "
-                if cell == panel.start_cell:
-                    middle_line += f"{YELLOW} S {RESET}"
-                elif cell == panel.end_cell:
-                    middle_line += f"{RED} E {RESET}"
-                elif cell.type == TypeCell.CLOSED42:
-                    middle_line += f"{CYAN} # {RESET}"
-                elif cell.position in visited_positions:
-                    middle_line += f"{RED} 8 {RESET}"
-                elif cell.view:
-                    middle_line += f"{GREEN} 0 {RESET}"
-                else:
-                    middle_line += "   "
-            middle_line += "|" if row[-1].state.east else " "
-            print(top_line)
-            print(middle_line)
-
-        bottom_line = ""
-        for cell in panel.map[-1]:
-            bottom_line += "+"
-            bottom_line += "---" if cell.state.south else "   "
-        bottom_line += "+"
-        print(bottom_line)
-        sys.stdout.flush()
-
-    visited_positions: set[tuple[int, int]] = set()
-    for position in path_positions:
-        visited_positions.add(position)
-        draw_frame(visited_positions)
-        time.sleep(0.08)
+def cells_only(cells: list[tuple[Cell, bool]]) -> list[Cell]:
+    return [cell for cell, _ in cells]

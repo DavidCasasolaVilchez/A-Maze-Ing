@@ -1,7 +1,7 @@
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
-# from Model.Resolver import start_search
-
+from Model.Resolver import start_search
+from Utils.PanelToTxt import PanelToTxt
 
 
 def main() -> None:
@@ -16,6 +16,7 @@ def main() -> None:
     p.generate42()
     p.convert_to_base()
     p.convert_imperfect()
+    PanelToTxt(p, start_search(p))
     p.display_ascii(args.display_mode)
 
 
