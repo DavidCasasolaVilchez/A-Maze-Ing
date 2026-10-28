@@ -1,6 +1,6 @@
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
-
+from Model.Resolver import start_search
 
 def main() -> None:
     args: ArgsParser = ArgsParser("config.txt")
@@ -29,6 +29,7 @@ def main() -> None:
     print("\n\n\n############### Laberinto imperfecto ###############\n\n")
     p.convert_to_base()
     p.display_ascii()
+    print(start_search(p))
 
 
 if __name__ == "__main__":

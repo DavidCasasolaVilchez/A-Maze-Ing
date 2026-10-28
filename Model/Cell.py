@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from Model.Panel import Panel
 
 
-class Cell():
+class Cell:
     def __init__(
             self,
             position: tuple[int, int],
