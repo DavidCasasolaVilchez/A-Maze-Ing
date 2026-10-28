@@ -72,13 +72,13 @@ class ArgsParser():
             elif kv[0].lower() == "seed":
                 self.seed = int(kv[1])
             elif kv[0].lower() == "display_mode":
-                if kv[1].upper() == "MINILIB":
-                    self.display_mode = DisplayMode.MINILIB
-                elif kv[1].upper() == "ASCII":
-                    self.display_mode = DisplayMode.ASCII
+                if kv[1].upper() == "COMPLETE":
+                    self.display_mode = DisplayMode.COMPLETE
+                elif kv[1].upper() == "ASCIIBASE":
+                    self.display_mode = DisplayMode.ASCIIBASE
                 else:
                     raise InvalidArguments(
-                        "Display_mode has to be ASCII/MINILIB")
+                        "Display_mode has to be COMPLETE/ASCIIBASE")
             else:
                 raise InvalidArguments("The arguments are not correct")
             return True

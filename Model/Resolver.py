@@ -39,7 +39,7 @@ def move(steps: list[str], cells: list[Cell], index: int) -> bool:
     map: Panel = cells[index].map
     directions: list[tuple[Cardinal, str, bool]] = [
         (Cardinal.N, "N", cells[index].state.north
-         or not map.get_cell(Cardinal.N, cells[index].position).view), #TODO: add code to take care about the solution is not jumped becouse view says not
+         or not map.get_cell(Cardinal.N, cells[index].position).view),
         (Cardinal.E, "E", cells[index].state.east
          or not map.get_cell(Cardinal.E, cells[index].position).view),
         (Cardinal.S, "S", cells[index].state.south

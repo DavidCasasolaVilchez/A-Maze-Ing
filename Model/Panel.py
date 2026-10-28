@@ -1,9 +1,10 @@
 from Model.Exceptions.CreationFailed import CreationFailed
-from Utils.Colors import RESET, CYAN, YELLOW, RED, GREEN
 from Model.Exceptions.OffTheMap import OffTheMap
+from Utils.DisplayerUtils import DisplayerUtils
+from Model.Enums.DisplayMode import DisplayMode
+from Utils.ConquerCell import conquer_cell
 from Model.Enums.Cardinal import Cardinal
 from Model.Enums.TypeCell import TypeCell
-from Utils.ConquerCell import conquer_cell
 from Model.Movement import Movement
 from Utils.GoBack import go_back
 from Model.Cell import Cell
@@ -97,63 +98,102 @@ class Panel():
             for x in y:
                 x.map = self
 
-    def display_ascii_num(self) -> None:
+    def convert_imperfect(self) -> None:
         for line in self.map:
             for cell in line:
-                value: int = 0
-                if cell.state.east:
-                    value += 1
-                if cell.state.south:
-                    value += 1
-                if cell.state.north:
-                    value += 1
-                if cell.state.west:
-                    value += 1
-                print(f"{value}", end="", flush=True)
-            print("")
+                if cell.type != TypeCell.CLOSED42:
+                    value: int = 0
+                    if cell.state.east:
+                        value += 1
+                    if cell.state.south:
+                        value += 1
+                    if cell.state.north:
+                        value += 1
+                    if cell.state.west:
+                        value += 1
+                    if value > 2:
+                        cell.break_random_valid_wall(self.seed)
 
-    def display_ascii(self) -> None:
+    def display_ascii(self, mode: DisplayMode) -> None:
+        displayer: DisplayerUtils = DisplayerUtils.create_display(mode)
         for y, line in enumerate(self.map):
             top_line = ""
             middle_line = ""
             for cell in line:
-                top_line += "+"
+                try:
+                    if (cell.type == TypeCell.CLOSED42 or
+                        self.get_cell(Cardinal.N, cell.position).type
+                        == TypeCell.CLOSED42 or
+                        self.get_cell(Cardinal.W, cell.position).type
+                        == TypeCell.CLOSED42 or
+                        self.get_cell(Cardinal.W, self.get_cell(
+                            Cardinal.N, cell.position).position).type
+                            == TypeCell.CLOSED42):
+                        top_line += displayer.corner42
+                    else:
+                        top_line += displayer.corner
+                except (OffTheMap):
+                    top_line += displayer.corner
                 if cell.state.north:
-                    top_line += "---"
+                    try:
+                        if (cell.type == TypeCell.CLOSED42 or
+                            self.get_cell(Cardinal.N, cell.position).type
+                                == TypeCell.CLOSED42):
+                            top_line += displayer.floor42
+                        else:
+                            top_line += displayer.floor
+                    except (OffTheMap):
+                        top_line += displayer.floor
                 else:
-                    top_line += "   "
-            top_line += "+"
+                    top_line += displayer.empty_floor
+            try:
+                if (cell.type == TypeCell.CLOSED42 or
+                    self.get_cell(Cardinal.N, cell.position).type
+                    == TypeCell.CLOSED42 or
+                    self.get_cell(Cardinal.W, cell.position).type
+                        == TypeCell.CLOSED42):
+                    top_line += displayer.corner42
+                else:
+                    top_line += displayer.corner
+            except (OffTheMap):
+                top_line += displayer.corner
             for x, cell in enumerate(line):
                 if cell.state.west:
-                    middle_line += "|"
+                    try:
+                        if (cell.type == TypeCell.CLOSED42 or
+                            self.get_cell(Cardinal.W, cell.position).type
+                                == TypeCell.CLOSED42):
+                            middle_line += displayer.wall42
+                        else:
+                            middle_line += displayer.wall
+                    except (OffTheMap):
+                        middle_line += displayer.wall
                 else:
-                    middle_line += " "
+                    middle_line += displayer.empty_wall
                 if cell == self.start_cell:
-                    middle_line += f"{YELLOW} S {RESET}"
+                    middle_line += displayer.entry
                 elif cell == self.end_cell:
-                    middle_line += f"{RED} E {RESET}"
+                    middle_line += displayer.exit
                 elif cell.type == TypeCell.CLOSED42:
-                    middle_line += f"{CYAN} # {RESET}"
-                elif cell.view:
-                    middle_line += f"{GREEN} 0 {RESET}"
+                    middle_line += displayer.c42
                 else:
-                    middle_line += "   "
+                    middle_line += displayer.empty_floor
             if line[-1].state.east:
-                middle_line += "|"
+                middle_line += displayer.wall
             else:
-                middle_line += " "
+                middle_line += displayer.empty_wall
             print(top_line)
-            time.sleep(0.02)
+            time.sleep(0.03)
             print(middle_line)
-            time.sleep(0.02)
+            time.sleep(0.03)
         bottom_line = ""
         for cell in self.map[-1]:
-            bottom_line += "+"
+            bottom_line += displayer.corner
             if cell.state.south:
-                bottom_line += "---"
+                bottom_line += displayer.floor
             else:
-                bottom_line += "   "
-        bottom_line += "+"
+                bottom_line += displayer.empty_floor
+        bottom_line += displayer.corner
         print(bottom_line)
 
     def all_viewed(self) -> bool:
@@ -169,7 +209,7 @@ class Panel():
         actual.view = True
         while not self.all_viewed():
             if actual.exist_not_viewed_neighbor():
-                aux = conquer_cell(self, stack, actual)
+                aux = conquer_cell(self, stack, actual, self.seed)
                 if aux is not None:
                     actual = aux
                     actual.view = True
