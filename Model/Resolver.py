@@ -10,7 +10,7 @@ def start_search(panel: Panel) -> str:
     end_cells: list[tuple[Cell, bool]] = [(panel.end_cell, False)]
     solution: str = "None"
     common_cells: list[Cell] = []
-    
+
     for i in range(panel.size[0]):
         for j in range(panel.size[1]):
             panel.map[i][j].view = False
@@ -66,7 +66,8 @@ def move_start(steps: list[str],
         return False
 
     branches: list[tuple[str, Cell]] = [
-        (steps[index] + name, map.get_cell(direction, cells[index][0].position))
+        (steps[index] + name, map.get_cell(direction,
+                                           cells[index][0].position))
         for direction, name in available
     ]
     steps[index] = branches[0][0]
@@ -101,7 +102,8 @@ def move_end(steps: list[str],
         return False
 
     branches: list[tuple[str, Cell]] = [
-        (steps[index] + name, map.get_cell(direction, cells[index][0].position))
+        (steps[index] + name, map.get_cell(direction,
+                                           cells[index][0].position))
         for direction, name in available
     ]
     steps[index] = branches[0][0]
@@ -140,7 +142,8 @@ def display_solution(panel: Panel, steps: str) -> None:
     current: Cell = panel.start_cell
     for step_number, step in enumerate(steps, start=1):
         if step not in direction_info:
-            raise ValueError(f"Invalid direction at step {step_number}: {step}")
+            raise ValueError(
+                f"Invalid direction at step {step_number}: {step}")
         direction, wall_name = direction_info[step]
         if getattr(current.state, wall_name):
             raise ValueError(f"Step {step_number} crosses a wall")

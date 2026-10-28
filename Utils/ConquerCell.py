@@ -4,7 +4,9 @@ from Model.Cell import Cell
 from Model.Enums.Cardinal import Cardinal
 from Model.Enums.TypeCell import TypeCell
 from Model.Movement import Movement
-from random import choice
+import random
+import time
+
 
 if TYPE_CHECKING:
     from Model.Panel import Panel
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 
 def conquer_cell(
         panel: "Panel", stack: list[Movement],
-        actual: Cell) -> Cell:
+        actual: Cell, seed: int) -> Cell:
     values: list[tuple[tuple[int, int], Cardinal]] = [
         ((-1, 0), Cardinal.N),
         ((0, 1), Cardinal.E),
@@ -34,7 +36,7 @@ def conquer_cell(
     if not available:
         return None
 
-    aux_mv, direction = choice(available)
+    aux_mv, direction = random.Random(seed * (time.time())).choice(available)
     try:
         actual.break_wall(direction)
     except InvalidCell:
