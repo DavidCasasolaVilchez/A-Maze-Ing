@@ -2,6 +2,7 @@ from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
 from Model.Resolver import start_search
 
+
 def main() -> None:
     args: ArgsParser = ArgsParser("config.txt")
 #    print(

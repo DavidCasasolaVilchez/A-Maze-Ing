@@ -24,8 +24,13 @@ def start_search(panel: Panel) -> str:
             if end_cells[i][1]:
                 continue
             move_end(end_steps, end_cells, i)
-    
-    solution = start_steps[i] + invert(end_steps[j])
+    for i in len(common_cells):
+        current: str = (
+            start_steps[start_cells.index(common_cells[i])]
+            + invert(end_cells.index(common_cells[i]))
+        )
+        if len(solution) > len(current):
+            solution = current
     return solution
 
 
