@@ -32,10 +32,12 @@ def menu() -> None:
                 retry = False
                 p.make_maze()
                 PanelToTxt(p, p.solution)
+            p.display_ascii(-1)
             if path:
-                p.display_path(p.display_ascii(False))
-            else:
-                p.display_ascii(False)
+                for step in range(p.path_cell_count + 1):
+                    print(f"{CLEAR}", end="")
+                    p.display_ascii(step)
+                    time.sleep(0.08)
             print("=== A-Maze-ing ===")
             for i in range(len(options)):
                 print(options[i][1])
