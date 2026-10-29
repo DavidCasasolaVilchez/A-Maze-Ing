@@ -39,6 +39,7 @@ class ArgsParser():
                 f"Exit must be behind [0-{self.width}] and [0-{self.height}]")
 
     def evaluate_line(self, line: str) -> bool:
+        tp: list[str]
         try:
             if line == "":
                 return False
@@ -51,12 +52,12 @@ class ArgsParser():
             elif kv[0].lower() == "height":
                 self.height = int(kv[1])
             elif kv[0].lower() == "entry":
-                tp: list[str] = kv[1].split(",", 2)
+                tp = kv[1].split(",", 2)
                 if len(tp) == 1:
                     raise InvalidArguments("The tuple has to use [0,0] format")
                 self.entry = (int(tp[1]), int(tp[0]))
             elif kv[0].lower() == "exit":
-                tp: list[str] = kv[1].split(",", 2)
+                tp = kv[1].split(",", 2)
                 if len(tp) == 1:
                     raise InvalidArguments("The tuple has to use [0,0] format")
                 self.exit = (int(tp[1]), int(tp[0]))

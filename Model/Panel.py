@@ -9,7 +9,7 @@ from Model.Movement import Movement
 from Utils.GoBack import go_back
 from Utils.Colors import RESET
 from Model.Cell import Cell
-import random
+from random import Random
 import time
 
 
@@ -34,7 +34,7 @@ class Panel():
         self.solution: str = ""
         self.displayer: DisplayerUtils = DisplayerUtils.create_display(mode)
         self.path_cell_count: int = path_cell_count
-        self.rnd: random = random.Random(seed)
+        self.rnd: Random = Random(seed)
         self.refill_map()
 
     @staticmethod
@@ -136,7 +136,7 @@ class Panel():
                     if cell.state.west:
                         value += 1
                     if value > 2:
-                        cell.break_random_valid_wall(self.seed)
+                        cell.break_random_valid_wall(self.rnd)
 
     def display_ascii(self, path_until: int) -> str:
         complete_line: str = ""
@@ -267,7 +267,7 @@ class Panel():
         actual.view = True
         while not self.all_viewed():
             if actual.exist_not_viewed_neighbor():
-                aux = conquer_cell(self, stack, actual, self.seed)
+                aux = conquer_cell(self, stack, actual)
                 if aux is not None:
                     actual = aux
                     actual.view = True
@@ -303,7 +303,7 @@ class Panel():
         end_cells: list[tuple[Cell, bool]] = [(self.end_cell, False)]
         common_cells: list[Cell] = []
         current_solution: tuple[str, bool]
-        self.solution: str = ""
+        self.solution = ""
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 self.map[i][j].view = False
@@ -357,13 +357,13 @@ class Panel():
         for i, c in enumerate(sol):
             match c:
                 case 'N':
-                    movement.append(movement[i] + (0, -1))
+                    movement.append((movement[i][0] - 1, movement[i][1]))
                 case 'E':
-                    movement.append(movement[i] + (1, 0))
+                    movement.append((movement[i][0], movement[i][1] + 1))
                 case 'S':
-                    movement.append(movement[i] + (0, 1))
+                    movement.append((movement[i][0] + 1, movement[i][1]))
                 case 'W':
-                    movement.append(movement[i] + (-1, 0))
+                    movement.append((movement[i][0], movement[i][1] - 1))
         for i in range(len(movement)):
             for j in range(i + 1, len(movement)):
                 if movement[i] == movement[j]:
@@ -372,8 +372,7 @@ class Panel():
                     break
         if (index_s < 0 or index_e < 0):
             return (sol, False)
-        return ("".join(list(sol).pop(i for i in range(index_s, index_e))),
-                True)
+        return (sol[:index_s] + sol[index_e:], True)
 
     def invert(self, s: str) -> str:
         opposite: dict[str, str] = {
@@ -420,7 +419,9 @@ class Panel():
 
     def move_end(self, steps: list[str],
                  cells: list[tuple[Cell, bool]], index: int) -> bool:
-        map: Panel = cells[index][0].map
+        map = cells[index][0].map
+        if map is None:
+            return False
         directions: list[tuple[Cardinal, str, bool]] = [
             (Cardinal.N, "N", cells[index][0].state.north or
                 map.get_cell(Cardinal.N,
@@ -461,7 +462,7 @@ class Panel():
             self,
             s_cells: list[tuple[Cell, bool]],
             e_cells: list[tuple[Cell, bool]]) -> list[Cell]:
-        e_pos: tuple[int, int] = {cell.position for cell, _ in e_cells}
+        e_pos: set[tuple[int, int]] = {cell.position for cell, _ in e_cells}
         return [cell for cell, _ in s_cells if cell.position in e_pos]
 
     def cells_only(self, cells: list[tuple[Cell, bool]]) -> list[Cell]:

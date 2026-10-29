@@ -7,6 +7,14 @@ import time
 
 def menu() -> None:
     args: ArgsParser = ArgsParser("config.txt")
+    assert args.width is not None
+    assert args.height is not None
+    assert args.entry is not None
+    assert args.exit is not None
+    assert args.perfect is not None
+    assert args.seed is not None
+    assert args.display_mode is not None
+    assert args.output_file is not None
     options: list[tuple[int, str]] = [
         (1, "1. Re-generate a new maze"),
         (2, "2. Show / Hide the shortest path"),
@@ -49,7 +57,7 @@ def menu() -> None:
                         args.perfect,
                         args.entry,
                         args.exit,
-                        args.seed * time.time(),
+                        args.seed,
                         args.display_mode,
                         0
                     )

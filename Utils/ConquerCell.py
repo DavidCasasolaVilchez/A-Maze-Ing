@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 def conquer_cell(
         panel: "Panel", stack: list[Movement],
-        actual: Cell, seed: int) -> Cell:
+        actual: Cell) -> Cell:
     values: list[tuple[tuple[int, int], Cardinal]] = [
         ((-1, 0), Cardinal.N),
         ((0, 1), Cardinal.E),
@@ -32,13 +32,13 @@ def conquer_cell(
         available.append((aux_mv, direction))
 
     if not available:
-        return None
+        return Cell.create_base_cell((-1, -1), panel)
 
     aux_mv, direction = panel.rnd.choice(available)
     try:
         actual.break_wall(direction)
     except InvalidCell:
-        return None
+        return Cell.create_base_cell((-1, -1), panel)
 
     stack.append(Movement(aux_mv, direction))
     return panel.map[

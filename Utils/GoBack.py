@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 def go_back(panel: "Panel", stack: list[Movement], actual: Cell) -> Cell:
     if len(stack) <= 0:
-        return None
+        return Cell.create_base_cell((-1, -1), panel)
     last_move: Movement = stack.pop(len(stack) - 1)
     go_back = last_move.go_back()
     return (

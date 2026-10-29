@@ -3,7 +3,8 @@ from Model.Enums.TypeCell import TypeCell
 from Model.Enums.Cardinal import Cardinal
 from typing import TYPE_CHECKING
 from Model.Walls import Walls
-import random
+from random import Random
+from typing import Optional
 
 if TYPE_CHECKING:
     from Model.Panel import Panel
@@ -15,7 +16,7 @@ class Cell:
             position: tuple[int, int],
             type: TypeCell,
             state: Walls,
-            map: "Panel",
+            map: Optional["Panel"],
             view: bool,
             view_from_end: bool,
             path: int
@@ -25,12 +26,12 @@ class Cell:
         self.state: Walls = state
         self.view: bool = view
         self.view_from_end: bool = view_from_end
-        self.map: "Panel" = map
+        self.map: Optional["Panel"] = map
         self.path: int = path
 
     @staticmethod
     def create_base_cell(position: tuple[int, int],
-                         map: "Panel") -> "Cell":
+                         map: Optional["Panel"]) -> "Cell":
         return Cell(
             position,
             TypeCell.BASE,
@@ -46,6 +47,8 @@ class Cell:
 
     def break_wall(self, direction: Cardinal) -> None:
         """ This method could raise InvalidCell and OffTheMap Exceptions """
+        if self.map is None:
+            raise InvalidCell()
         next: Cell = self.map.get_cell(direction, self.position)
         if next.type == TypeCell.CLOSED42 or self.type == TypeCell.CLOSED42:
             print(f"Next: [{next.position}] Self: [{self.position}]")
@@ -55,6 +58,8 @@ class Cell:
             Cardinal((direction.value + 2) % 4))
 
     def exist_not_viewed_neighbor(self) -> bool:
+        if self.map is None:
+            return False
         if ((
             (self.position[0] + 1) < self.map.size[0] and
             not self.map.map[self.position[0] + 1][self.position[1]].view and
@@ -80,6 +85,8 @@ class Cell:
         return False
 
     def return_valid_movements(self) -> list[Cardinal]:
+        if self.map is None:
+            return []
         valid_movements: list[Cardinal] = list()
         if (
             (self.position[0] + 1) < self.map.size[0] and
@@ -111,8 +118,8 @@ class Cell:
             valid_movements.append(Cardinal.W)
         return valid_movements
 
-    def break_random_valid_wall(self, seed: str):
+    def break_random_valid_wall(self, rng: Random) -> None:
         valid_movements: list[Cardinal] = self.return_valid_movements()
         if len(valid_movements) > 0:
-            dir: Cardinal = random.Random(seed).choice(valid_movements)
+            dir: Cardinal = rng.choice(valid_movements)
             self.break_wall(dir)
