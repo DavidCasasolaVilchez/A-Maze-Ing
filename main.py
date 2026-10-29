@@ -2,23 +2,26 @@ from Utils.Colors import GREEN, RESET, RED, CLEAR, colors
 from Utils.PanelToTxt import PanelToTxt
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
+import time
 
 
 def menu() -> None:
     args: ArgsParser = ArgsParser("config.txt")
-    options: list[tuple[int, str]] = {
+    options: list[tuple[int, str]] = [
         (1, "1. Re-generate a new maze"),
         (2, "2. Show / Hide the shortest path"),
         (3, "3. Select maze colors"),
         (4, "4. Quit")
-    }
+    ]
+
     p: Panel = Panel.create_base(
         (args.height, args.width),
         args.perfect,
         args.entry,
         args.exit,
         args.seed,
-        args.display_mode
+        args.display_mode,
+        0
     )
     path: bool = True
     retry: bool = True
@@ -29,10 +32,13 @@ def menu() -> None:
                 retry = False
                 p.make_maze()
                 PanelToTxt(p, p.solution)
-            p.display_ascii(args.display_mode, path)
+            if path:
+                p.display_path(p.display_ascii(False))
+            else:
+                p.display_ascii(False)
             print("=== A-Maze-ing ===")
-            for i in options:
-                print(i[1])
+            for i in range(len(options)):
+                print(options[i][1])
             selection = int(input(f"{GREEN}Choice? (1/4): {RESET}"))
             match selection:
                 case 1:
@@ -42,7 +48,8 @@ def menu() -> None:
                         args.entry,
                         args.exit,
                         args.seed,
-                        args.display_mode
+                        args.display_mode,
+                        0
                     )
                     path = True
                     retry = True

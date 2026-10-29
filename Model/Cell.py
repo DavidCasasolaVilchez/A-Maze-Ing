@@ -17,7 +17,8 @@ class Cell:
             state: Walls,
             map: "Panel",
             view: bool,
-            view_from_end: bool
+            view_from_end: bool,
+            path: int
             ):
         self.position: tuple[int, int] = position
         self.type: TypeCell = type
@@ -25,6 +26,7 @@ class Cell:
         self.view: bool = view
         self.view_from_end: bool = view_from_end
         self.map: "Panel" = map
+        self.path: int = path
 
     @staticmethod
     def create_base_cell(position: tuple[int, int],
@@ -35,7 +37,8 @@ class Cell:
             Walls.create_full(),
             map,
             False,
-            False
+            False,
+            0
         )
 
     def change_type(self, new_type: TypeCell) -> None:

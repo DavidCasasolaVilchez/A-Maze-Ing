@@ -21,7 +21,8 @@ class Panel():
             start_cell: Cell,
             end_cell: Cell,
             seed: int,
-            mode: DisplayMode
+            mode: DisplayMode,
+            path_cell_count: int
             ):
         self.is_perfect: bool = is_perfect
         self.start_cell: Cell = start_cell
@@ -31,6 +32,7 @@ class Panel():
         self.seed: int = seed
         self.solution: str = ""
         self.displayer: DisplayerUtils = DisplayerUtils.create_display(mode)
+        self.path_cell_count: int = path_cell_count
         self.refill_map()
 
     @staticmethod
@@ -40,7 +42,8 @@ class Panel():
         entry: tuple[int, int],
         exit: tuple[int, int],
         seed: int,
-        mode: DisplayMode
+        mode: DisplayMode,
+        path_cell_count: int
     ) -> "Panel":
         map: list[list[Cell]] = list()
         for y in range(0, size[0]):
@@ -49,6 +52,7 @@ class Panel():
                 map[y].append(Cell.create_base_cell((y, x), None))
         map[entry[0]][entry[1]].change_type(TypeCell.START)
         map[exit[0]][exit[1]].change_type(TypeCell.END)
+        path_cell_count = 0
         return Panel(
             map,
             size,
@@ -56,7 +60,8 @@ class Panel():
             map[entry[0]][entry[1]],
             map[exit[0]][exit[1]],
             seed,
-            mode
+            mode,
+            path_cell_count
         )
 
     def make_maze(self) -> None:
@@ -131,7 +136,7 @@ class Panel():
                     if value > 2:
                         cell.break_random_valid_wall(self.seed)
 
-    def display_ascii(self, mode: DisplayMode, path: bool) -> None:
+    def display_ascii(self, path: bool) -> tuple[str, str, str]:
         for y, line in enumerate(self.map):
             top_line = ""
             middle_line = ""
@@ -209,7 +214,7 @@ class Panel():
                 elif cell.type == TypeCell.CLOSED42:
                     middle_line += (f"{self.displayer.color_cell_42}"
                                     f"{self.displayer.c42}{RESET}")
-                elif cell.type == TypeCell.PATH and path:
+                elif (cell.type == TypeCell.PATH and path):
                     middle_line += (f"{self.displayer.color_path}"
                                     f"{self.displayer.path}{RESET}")
                 else:
@@ -238,6 +243,23 @@ class Panel():
         bottom_line += (f"{self.displayer.color_border}"
                         f"{self.displayer.corner}{RESET}")
         print(bottom_line)
+        return [top_line, middle_line, bottom_line]
+
+    def display_path(self, lines: tuple[str, str, str]) -> None:
+        index: int = 1
+        tmp: list[str] = list(lines[1])
+        while index <= self.path_cell_count:
+            linear_pos: int = -1
+            print(lines[0])
+            for i in range(self.size[0]):
+                for j in range(self.size[1]):
+                    if self.map[i][j].path <= index:
+                        index += 1
+                        linear_pos = (i - 1) * self.size[0] + j
+                        tmp[linear_pos] = (f"{self.displayer.color_path}"
+                                           f"{self.displayer.path}{RESET}")
+            print("".join(tmp))
+            print(lines[2])
 
     def all_viewed(self) -> bool:
         for row in self.map:
@@ -270,6 +292,7 @@ class Panel():
         for i in path:
             if actual.type != TypeCell.START and actual.type != TypeCell.END:
                 actual.type = TypeCell.PATH
+                self.path_cell_count += 1
             match i:
                 case 'N':
                     actual = self.get_cell(Cardinal.N, actual.position)
@@ -319,7 +342,20 @@ class Panel():
         while (current_solution[1]):
             current_solution = self.quit_concurrency(current_solution[0])
         self.solution = current_solution[0]
+        self.assign_path(self.solution)
         return self.solution
+
+    def assign_path(self, sol: str) -> None:
+        current_cell: Cell = self.start_cell
+        direction: dict[str, Cardinal] = {
+            'N': Cardinal.N,
+            'E': Cardinal.E,
+            'S': Cardinal.S,
+            'W': Cardinal.W
+        }
+        for i, c in enumerate(sol):
+            current_cell = self.get_cell(direction[c], current_cell.position)
+            current_cell.path = i + 1
 
     def quit_concurrency(self, sol: str) -> tuple[str, bool]:
         movement: list[tuple[int, int]] = [(0, 0)]
