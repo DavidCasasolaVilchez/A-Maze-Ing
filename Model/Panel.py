@@ -138,7 +138,8 @@ class Panel():
                     if value > 2:
                         cell.break_random_valid_wall(self.seed)
 
-    def display_ascii(self, path: bool) -> tuple[str, str, str]:
+    def display_ascii(self, path_until: int) -> str:
+        complete_line: str = ""
         for y, line in enumerate(self.map):
             top_line = ""
             middle_line = ""
@@ -216,7 +217,7 @@ class Panel():
                 elif cell.type == TypeCell.CLOSED42:
                     middle_line += (f"{self.displayer.color_cell_42}"
                                     f"{self.displayer.c42}{RESET}")
-                elif (cell.type == TypeCell.PATH and path):
+                elif (cell.path > 0 and cell.path <= path_until):
                     middle_line += (f"{self.displayer.color_path}"
                                     f"{self.displayer.path}{RESET}")
                 else:
@@ -228,10 +229,14 @@ class Panel():
             else:
                 middle_line += (f"{self.displayer.color_empty}"
                                 f"{self.displayer.empty_wall}{RESET}")
+            complete_line += top_line
+            complete_line += middle_line
             print(top_line)
-            time.sleep(0.03)
+            if path_until == -1:
+                time.sleep(0.03)
             print(middle_line)
-            time.sleep(0.03)
+            if path_until == -1:
+                time.sleep(0.03)
         bottom_line = ""
         for cell in self.map[-1]:
             bottom_line += (f"{self.displayer.color_border}"
@@ -244,24 +249,10 @@ class Panel():
                                 f"{self.displayer.empty_floor}{RESET}")
         bottom_line += (f"{self.displayer.color_border}"
                         f"{self.displayer.corner}{RESET}")
+        complete_line += bottom_line
         print(bottom_line)
-        return [top_line, middle_line, bottom_line]
 
-    def display_path(self, lines: tuple[str, str, str]) -> None:
-        index: int = 1
-        tmp: list[str] = list(lines[1])
-        while index <= self.path_cell_count:
-            linear_pos: int = -1
-            print(lines[0])
-            for i in range(self.size[0]):
-                for j in range(self.size[1]):
-                    if self.map[i][j].path <= index:
-                        index += 1
-                        linear_pos = (i - 1) * self.size[0] + j
-                        tmp[linear_pos] = (f"{self.displayer.color_path}"
-                                           f"{self.displayer.path}{RESET}")
-            print("".join(tmp))
-            print(lines[2])
+        return complete_line
 
     def all_viewed(self) -> bool:
         for row in self.map:

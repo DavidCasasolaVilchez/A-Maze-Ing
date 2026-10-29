@@ -2,6 +2,7 @@ from Utils.Colors import GREEN, RESET, RED, CLEAR, colors
 from Utils.PanelToTxt import PanelToTxt
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
+import time
 
 
 def menu() -> None:
@@ -32,9 +33,10 @@ def menu() -> None:
                 p.make_maze()
                 PanelToTxt(p, p.solution, args.output_file)
             if path:
-                p.display_path(p.display_ascii(False))
-            else:
-                p.display_ascii(False)
+                for step in range(p.path_cell_count + 1):
+                    print(f"{CLEAR}", end="")
+                    p.display_ascii(step)
+                    time.sleep(0.08)
             print("=== A-Maze-ing ===")
             for i in range(len(options)):
                 print(options[i][1])
