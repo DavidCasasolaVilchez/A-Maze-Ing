@@ -4,8 +4,6 @@ from Model.Cell import Cell
 from Model.Enums.Cardinal import Cardinal
 from Model.Enums.TypeCell import TypeCell
 from Model.Movement import Movement
-import random
-import time
 
 
 if TYPE_CHECKING:
@@ -36,7 +34,7 @@ def conquer_cell(
     if not available:
         return None
 
-    aux_mv, direction = random.Random(seed * (time.time())).choice(available)
+    aux_mv, direction = panel.rnd.choice(available)
     try:
         actual.break_wall(direction)
     except InvalidCell:

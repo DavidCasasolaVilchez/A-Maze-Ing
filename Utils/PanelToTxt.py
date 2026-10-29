@@ -2,8 +2,8 @@ from Model.Panel import Panel
 from Model.Cell import Cell
 
 
-def PanelToTxt(panel: Panel, steps: str) -> None:
-    with open("result.txt", "w", encoding="utf-8"):
+def PanelToTxt(panel: Panel, steps: str, file_name: str) -> None:
+    with open(file_name, "w", encoding="utf-8"):
         pass
     for line in range(panel.size[0]):
         for row in range(panel.size[1]):
@@ -19,9 +19,9 @@ def PanelToTxt(panel: Panel, steps: str) -> None:
 
 
 def ParsePanel(cell: Cell) -> str:
-    north: int = 0 if cell.state.north else 0b0001
-    east: int = 0 if cell.state.east else 0b0010
-    south: int = 0 if cell.state.south else 0b0100
-    west: int = 0 if cell.state.west else 0b1000
+    north: int = 0 if not cell.state.north else 0b0001
+    east: int = 0 if not cell.state.east else 0b0010
+    south: int = 0 if not cell.state.south else 0b0100
+    west: int = 0 if not cell.state.west else 0b1000
     result: int = north | east | south | west
     return (format(result, "x"))

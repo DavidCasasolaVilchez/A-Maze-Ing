@@ -9,6 +9,7 @@ from Model.Movement import Movement
 from Utils.GoBack import go_back
 from Utils.Colors import RESET
 from Model.Cell import Cell
+import random
 import time
 
 
@@ -33,6 +34,7 @@ class Panel():
         self.solution: str = ""
         self.displayer: DisplayerUtils = DisplayerUtils.create_display(mode)
         self.path_cell_count: int = path_cell_count
+        self.rnd: random = random.Random(seed)
         self.refill_map()
 
     @staticmethod

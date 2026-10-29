@@ -54,12 +54,12 @@ class ArgsParser():
                 tp: list[str] = kv[1].split(",", 2)
                 if len(tp) == 1:
                     raise InvalidArguments("The tuple has to use [0,0] format")
-                self.entry = (int(tp[0]), int(tp[1]))
+                self.entry = (int(tp[1]), int(tp[0]))
             elif kv[0].lower() == "exit":
                 tp: list[str] = kv[1].split(",", 2)
                 if len(tp) == 1:
                     raise InvalidArguments("The tuple has to use [0,0] format")
-                self.exit = (int(tp[0]), int(tp[1]))
+                self.exit = (int(tp[1]), int(tp[0]))
             elif kv[0].lower() == "output_file":
                 self.output_file = kv[1]
             elif kv[0].lower() == "perfect":

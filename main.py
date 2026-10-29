@@ -2,7 +2,6 @@ from Utils.Colors import GREEN, RESET, RED, CLEAR, colors
 from Utils.PanelToTxt import PanelToTxt
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
-import time
 
 
 def menu() -> None:
@@ -31,7 +30,7 @@ def menu() -> None:
             if retry:
                 retry = False
                 p.make_maze()
-                PanelToTxt(p, p.solution)
+                PanelToTxt(p, p.solution, args.output_file)
             if path:
                 p.display_path(p.display_ascii(False))
             else:
