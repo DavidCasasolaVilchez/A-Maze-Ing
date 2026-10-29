@@ -286,8 +286,8 @@ class Panel():
         start_cells: list[tuple[Cell, bool]] = [(self.start_cell, False)]
         end_cells: list[tuple[Cell, bool]] = [(self.end_cell, False)]
         common_cells: list[Cell] = []
-        self.solution = ""
-
+        current_solution: tuple[str, bool]
+        self.solution: str = ""
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 self.map[i][j].view = False
@@ -315,7 +315,36 @@ class Panel():
             )
             if not self.solution or len(self.solution) > len(current):
                 self.solution = current
+        current_solution = (self.solution, True)
+        while (current_solution[1]):
+            current_solution = self.quit_concurrency(current_solution[0])
+        self.solution = current_solution[0]
         return self.solution
+
+    def quit_concurrency(self, sol: str) -> tuple[str, bool]:
+        movement: list[tuple[int, int]] = [(0, 0)]
+        index_s: int = -1
+        index_e: int = -1
+        for i, c in enumerate(sol):
+            match c:
+                case 'N':
+                    movement.append(movement[i] + (0, -1))
+                case 'E':
+                    movement.append(movement[i] + (1, 0))
+                case 'S':
+                    movement.append(movement[i] + (0, 1))
+                case 'W':
+                    movement.append(movement[i] + (-1, 0))
+        for i in range(len(movement)):
+            for j in range(i + 1, len(movement)):
+                if movement[i] == movement[j]:
+                    index_s = i
+                    index_e = j
+                    break
+        if (index_s < 0 or index_e < 0):
+            return (sol, False)
+        return ("".join(list(sol).pop(i for i in range(index_s, index_e))),
+                True)
 
     def invert(self, s: str) -> str:
         opposite: dict[str, str] = {
