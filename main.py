@@ -32,6 +32,7 @@ def menu() -> None:
                 retry = False
                 p.make_maze()
                 PanelToTxt(p, p.solution, args.output_file)
+            p.display_ascii(-1)
             if path:
                 for step in range(p.path_cell_count + 1):
                     print(f"{CLEAR}", end="")
@@ -48,7 +49,7 @@ def menu() -> None:
                         args.perfect,
                         args.entry,
                         args.exit,
-                        args.seed,
+                        args.seed * time.time(),
                         args.display_mode,
                         0
                     )

@@ -60,6 +60,8 @@ manualmente con:
 python3 main.py
 ```
 
+Para ejecutarlo a traves de una terminal externa ha de ejecutarse como programa con el archivo `a-maze-ing.sh`
+
 El menú permite:
 
 1. Regenerar el laberinto.
