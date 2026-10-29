@@ -6,5 +6,23 @@ BLUE: str = "\033[34m"
 MAGENTA: str = "\033[35m"
 CYAN: str = "\033[36m"
 WHITE: str = "\033[37m"
-BROWN: str = "\033[38;5;136m"
+
+BRIGHT_BLACK: str = "\033[90m"
+BRIGHT_RED: str = "\033[91m"
+BRIGHT_GREEN: str = "\033[92m"
+BRIGHT_YELLOW: str = "\033[93m"
+BRIGHT_BLUE: str = "\033[94m"
+BRIGHT_MAGENTA: str = "\033[95m"
+BRIGHT_CYAN: str = "\033[96m"
+BRIGHT_WHITE: str = "\033[97m"
+
 RESET: str = "\033[0m"
+
+
+CLEAR: str = "\033[2J\033[H"
+
+colors: list[str] = [
+    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, BRIGHT_BLACK,
+    BRIGHT_RED, BRIGHT_GREEN, BRIGHT_YELLOW, BRIGHT_BLUE, BRIGHT_MAGENTA,
+    BRIGHT_CYAN, BRIGHT_WHITE
+]

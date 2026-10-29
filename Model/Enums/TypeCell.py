@@ -6,3 +6,4 @@ class TypeCell(Enum):
     START = 1
     END = 2
     CLOSED42 = 3
+    PATH = 4

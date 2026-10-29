@@ -7,6 +7,7 @@ from Model.Enums.Cardinal import Cardinal
 from Model.Enums.TypeCell import TypeCell
 from Model.Movement import Movement
 from Utils.GoBack import go_back
+from Utils.Colors import RESET
 from Model.Cell import Cell
 import time
 
@@ -20,6 +21,7 @@ class Panel():
             start_cell: Cell,
             end_cell: Cell,
             seed: int,
+            mode: DisplayMode
             ):
         self.is_perfect: bool = is_perfect
         self.start_cell: Cell = start_cell
@@ -27,6 +29,8 @@ class Panel():
         self.map: list[list[Cell]] = map
         self.end_cell: Cell = end_cell
         self.seed: int = seed
+        self.solution: str = ""
+        self.displayer: DisplayerUtils = DisplayerUtils.create_display(mode)
         self.refill_map()
 
     @staticmethod
@@ -35,7 +39,8 @@ class Panel():
         is_perfect: bool,
         entry: tuple[int, int],
         exit: tuple[int, int],
-        seed: int
+        seed: int,
+        mode: DisplayMode
     ) -> "Panel":
         map: list[list[Cell]] = list()
         for y in range(0, size[0]):
@@ -50,8 +55,20 @@ class Panel():
             is_perfect,
             map[entry[0]][entry[1]],
             map[exit[0]][exit[1]],
-            seed
+            seed,
+            mode
         )
+
+    def make_maze(self) -> None:
+        for row in self.map:
+            for cell in row:
+                if cell.type == TypeCell.PATH:
+                    cell.type = TypeCell.BASE
+        self.generate42()
+        self.convert_to_base()
+        if not self.is_perfect:
+            self.convert_imperfect()
+        self.solve()
 
     def get_cell(self, direction: Cardinal, actual: tuple[int, int]) -> Cell:
         y, x = actual
@@ -114,8 +131,7 @@ class Panel():
                     if value > 2:
                         cell.break_random_valid_wall(self.seed)
 
-    def display_ascii(self, mode: DisplayMode) -> None:
-        displayer: DisplayerUtils = DisplayerUtils.create_display(mode)
+    def display_ascii(self, mode: DisplayMode, path: bool) -> None:
         for y, line in enumerate(self.map):
             top_line = ""
             middle_line = ""
@@ -129,71 +145,98 @@ class Panel():
                         self.get_cell(Cardinal.W, self.get_cell(
                             Cardinal.N, cell.position).position).type
                             == TypeCell.CLOSED42):
-                        top_line += displayer.corner42
+                        top_line += (f"{self.displayer.color_border_42}"
+                                     f"{self.displayer.corner42}{RESET}")
                     else:
-                        top_line += displayer.corner
+                        top_line += (f"{self.displayer.color_border}"
+                                     f"{self.displayer.corner}{RESET}")
                 except (OffTheMap):
-                    top_line += displayer.corner
+                    top_line += (f"{self.displayer.color_border}"
+                                 f"{self.displayer.corner}{RESET}")
                 if cell.state.north:
                     try:
                         if (cell.type == TypeCell.CLOSED42 or
                             self.get_cell(Cardinal.N, cell.position).type
                                 == TypeCell.CLOSED42):
-                            top_line += displayer.floor42
+                            top_line += (f"{self.displayer.color_border_42}"
+                                         f"{self.displayer.floor}{RESET}")
                         else:
-                            top_line += displayer.floor
+                            top_line += (f"{self.displayer.color_border}"
+                                         f"{self.displayer.floor}{RESET}")
                     except (OffTheMap):
-                        top_line += displayer.floor
+                        top_line += (f"{self.displayer.color_border}"
+                                     f"{self.displayer.floor}{RESET}")
                 else:
-                    top_line += displayer.empty_floor
+                    top_line += (f"{self.displayer.color_empty}"
+                                 f"{self.displayer.empty_floor}{RESET}")
             try:
                 if (cell.type == TypeCell.CLOSED42 or
                     self.get_cell(Cardinal.N, cell.position).type
                     == TypeCell.CLOSED42 or
                     self.get_cell(Cardinal.W, cell.position).type
                         == TypeCell.CLOSED42):
-                    top_line += displayer.corner42
+                    top_line += (f"{self.displayer.color_border_42}"
+                                 f"{self.displayer.corner42}{RESET}")
                 else:
-                    top_line += displayer.corner
+                    top_line += (f"{self.displayer.color_border}"
+                                 f"{self.displayer.corner}{RESET}")
             except (OffTheMap):
-                top_line += displayer.corner
+                top_line += (f"{self.displayer.color_border}"
+                             f"{self.displayer.corner}{RESET}")
             for x, cell in enumerate(line):
                 if cell.state.west:
                     try:
                         if (cell.type == TypeCell.CLOSED42 or
                             self.get_cell(Cardinal.W, cell.position).type
                                 == TypeCell.CLOSED42):
-                            middle_line += displayer.wall42
+                            middle_line += (f"{self.displayer.color_border_42}"
+                                            f"{self.displayer.wall42}{RESET}")
                         else:
-                            middle_line += displayer.wall
+                            middle_line += (f"{self.displayer.color_border}"
+                                            f"{self.displayer.wall}{RESET}")
                     except (OffTheMap):
-                        middle_line += displayer.wall
+                        middle_line += (f"{self.displayer.color_border}"
+                                        f"{self.displayer.wall}{RESET}")
                 else:
-                    middle_line += displayer.empty_wall
+                    middle_line += (f"{self.displayer.color_empty}"
+                                    f"{self.displayer.empty_wall}{RESET}")
                 if cell == self.start_cell:
-                    middle_line += displayer.entry
+                    middle_line += (f"{self.displayer.color_entry}"
+                                    f"{self.displayer.entry}{RESET}")
                 elif cell == self.end_cell:
-                    middle_line += displayer.exit
+                    middle_line += (f"{self.displayer.color_exit}"
+                                    f"{self.displayer.exit}{RESET}")
                 elif cell.type == TypeCell.CLOSED42:
-                    middle_line += displayer.c42
+                    middle_line += (f"{self.displayer.color_cell_42}"
+                                    f"{self.displayer.c42}{RESET}")
+                elif cell.type == TypeCell.PATH and path:
+                    middle_line += (f"{self.displayer.color_path}"
+                                    f"{self.displayer.path}{RESET}")
                 else:
-                    middle_line += displayer.empty_floor
+                    middle_line += (f"{self.displayer.color_empty}"
+                                    f"{self.displayer.empty_floor}{RESET}")
             if line[-1].state.east:
-                middle_line += displayer.wall
+                middle_line += (f"{self.displayer.color_border}"
+                                f"{self.displayer.wall}{RESET}")
             else:
-                middle_line += displayer.empty_wall
+                middle_line += (f"{self.displayer.color_empty}"
+                                f"{self.displayer.empty_wall}{RESET}")
             print(top_line)
             time.sleep(0.03)
             print(middle_line)
             time.sleep(0.03)
         bottom_line = ""
         for cell in self.map[-1]:
-            bottom_line += displayer.corner
+            bottom_line += (f"{self.displayer.color_border}"
+                            f"{self.displayer.corner}{RESET}")
             if cell.state.south:
-                bottom_line += displayer.floor
+                bottom_line += (f"{self.displayer.color_border}"
+                                f"{self.displayer.floor}{RESET}")
             else:
-                bottom_line += displayer.empty_floor
-        bottom_line += displayer.corner
+                bottom_line += (f"{self.displayer.color_empty}"
+                                f"{self.displayer.empty_floor}{RESET}")
+        bottom_line += (f"{self.displayer.color_border}"
+                        f"{self.displayer.corner}{RESET}")
         print(bottom_line)
 
     def all_viewed(self) -> bool:
@@ -214,11 +257,154 @@ class Panel():
                     actual = aux
                     actual.view = True
                     continue
-
             if not stack:
                 raise CreationFailed()
-
             aux = go_back(self, stack, actual)
             if aux is not None:
                 actual = aux
                 actual.view = True
+
+    def solve(self) -> None:
+        path: str = self.start_search()
+        actual: Cell = self.start_cell
+        for i in path:
+            if actual.type != TypeCell.START and actual.type != TypeCell.END:
+                actual.type = TypeCell.PATH
+            match i:
+                case 'N':
+                    actual = self.get_cell(Cardinal.N, actual.position)
+                case 'S':
+                    actual = self.get_cell(Cardinal.S, actual.position)
+                case 'E':
+                    actual = self.get_cell(Cardinal.E, actual.position)
+                case 'W':
+                    actual = self.get_cell(Cardinal.W, actual.position)
+
+    def start_search(self) -> str:
+        start_steps: list[str] = [""]
+        end_steps: list[str] = [""]
+        start_cells: list[tuple[Cell, bool]] = [(self.start_cell, False)]
+        end_cells: list[tuple[Cell, bool]] = [(self.end_cell, False)]
+        common_cells: list[Cell] = []
+        self.solution = ""
+
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                self.map[i][j].view = False
+        while not common_cells:
+            for i in range(len(start_steps)):
+                if start_cells[i][1]:
+                    continue
+                self.move_start(start_steps, start_cells, i)
+                common_cells = self.exist_equal_cells(start_cells, end_cells)
+                if common_cells:
+                    break
+            for i in range(len(end_steps)):
+                if end_cells[i][1]:
+                    continue
+                self.move_end(end_steps, end_cells, i)
+                common_cells = self.exist_equal_cells(start_cells, end_cells)
+                if common_cells:
+                    break
+        for i in range(len(common_cells)):
+            current: str = (
+                start_steps[
+                    self.cells_only(start_cells).index((common_cells[i]))]
+                + self.invert(end_steps[
+                    self.cells_only(end_cells).index(common_cells[i])])
+            )
+            if not self.solution or len(self.solution) > len(current):
+                self.solution = current
+        return self.solution
+
+    def invert(self, s: str) -> str:
+        opposite: dict[str, str] = {
+            'N': 'S',
+            'E': 'W',
+            'S': 'N',
+            'W': 'E'
+        }
+        return "".join(opposite[c] for c in reversed(s))
+
+    def move_start(self, steps: list[str],
+                   cells: list[tuple[Cell, bool]], index: int) -> bool:
+        directions: list[tuple[Cardinal, str, bool]] = [
+            (Cardinal.N, "N", cells[index][0].state.north or
+                self.get_cell(Cardinal.N, cells[index][0].position).view),
+            (Cardinal.E, "E", cells[index][0].state.east or
+                self.get_cell(Cardinal.E, cells[index][0].position).view),
+            (Cardinal.S, "S", cells[index][0].state.south or
+                self.get_cell(Cardinal.S, cells[index][0].position).view),
+            (Cardinal.W, "W", cells[index][0].state.west or
+                self.get_cell(Cardinal.W, cells[index][0].position).view),
+        ]
+        available: list[tuple[Cardinal, str]] = [
+            (direction, name)
+            for direction, name, is_wall in directions if not is_wall
+        ]
+        if not available or cells[index][1]:
+            cells[index] = (cells[index][0], True)
+            return False
+
+        branches: list[tuple[str, Cell]] = [
+            (steps[index] + name, self.get_cell(direction,
+                                                cells[index][0].position))
+            for direction, name in available
+        ]
+        steps[index] = branches[0][0]
+        cells[index] = (branches[0][1], cells[index][1])
+        cells[index][0].view = True
+        for branch_steps, branch_cell in branches[1:]:
+            steps.append(branch_steps)
+            branch_cell.view = True
+            cells.append((branch_cell, False))
+        return True
+
+    def move_end(self, steps: list[str],
+                 cells: list[tuple[Cell, bool]], index: int) -> bool:
+        map: Panel = cells[index][0].map
+        directions: list[tuple[Cardinal, str, bool]] = [
+            (Cardinal.N, "N", cells[index][0].state.north or
+                map.get_cell(Cardinal.N,
+                             cells[index][0].position).view_from_end),
+            (Cardinal.E, "E", cells[index][0].state.east or
+                map.get_cell(Cardinal.E,
+                             cells[index][0].position).view_from_end),
+            (Cardinal.S, "S", cells[index][0].state.south or
+                map.get_cell(Cardinal.S,
+                             cells[index][0].position).view_from_end),
+            (Cardinal.W, "W", cells[index][0].state.west or
+                map.get_cell(Cardinal.W,
+                             cells[index][0].position).view_from_end),
+        ]
+        available: list[tuple[Cardinal, str]] = [
+            (direction, name)
+            for direction, name, is_wall in directions if not is_wall
+        ]
+        if not available or cells[index][1]:
+            cells[index] = (cells[index][0], True)
+            return False
+
+        branches: list[tuple[str, Cell]] = [
+            (steps[index] + name,
+             map.get_cell(direction, cells[index][0].position))
+            for direction, name in available
+        ]
+        steps[index] = branches[0][0]
+        cells[index] = (branches[0][1], cells[index][1])
+        cells[index][0].view_from_end = True
+        for branch_steps, branch_cell in branches[1:]:
+            steps.append(branch_steps)
+            branch_cell.view_from_end = True
+            cells.append((branch_cell, False))
+        return True
+
+    def exist_equal_cells(
+            self,
+            s_cells: list[tuple[Cell, bool]],
+            e_cells: list[tuple[Cell, bool]]) -> list[Cell]:
+        e_pos: tuple[int, int] = {cell.position for cell, _ in e_cells}
+        return [cell for cell, _ in s_cells if cell.position in e_pos]
+
+    def cells_only(self, cells: list[tuple[Cell, bool]]) -> list[Cell]:
+        return [cell for cell, _ in cells]

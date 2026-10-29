@@ -1,23 +1,85 @@
+from Utils.Colors import GREEN, RESET, RED, CLEAR, colors
+from Utils.PanelToTxt import PanelToTxt
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
-from Model.Resolver import start_search
-from Utils.PanelToTxt import PanelToTxt
 
 
-def main() -> None:
+def menu() -> None:
     args: ArgsParser = ArgsParser("config.txt")
-    p: "Panel" = Panel.create_base(
+    options: list[tuple[int, str]] = {
+        (1, "1. Re-generate a new maze"),
+        (2, "2. Show / Hide the shortest path"),
+        (3, "3. Select maze colors"),
+        (4, "4. Quit")
+    }
+    p: Panel = Panel.create_base(
         (args.height, args.width),
         args.perfect,
         args.entry,
         args.exit,
         args.seed,
+        args.display_mode
     )
-    p.generate42()
-    p.convert_to_base()
-    p.convert_imperfect()
-    PanelToTxt(p, start_search(p))
-    p.display_ascii(args.display_mode)
+    path: bool = True
+    retry: bool = True
+    selection: int = 0
+    while selection != 4:
+        try:
+            if retry:
+                retry = False
+                p.make_maze()
+                PanelToTxt(p, p.solution)
+            p.display_ascii(args.display_mode, path)
+            print("=== A-Maze-ing ===")
+            for i in options:
+                print(i[1])
+            selection = int(input(f"{GREEN}Choice? (1/4): {RESET}"))
+            match selection:
+                case 1:
+                    p = Panel.create_base(
+                        (args.height, args.width),
+                        args.perfect,
+                        args.entry,
+                        args.exit,
+                        args.seed,
+                        args.display_mode
+                    )
+                    path = True
+                    retry = True
+                    print(f"{CLEAR}", end="")
+                case 2:
+                    path = not path
+                    print(f"{CLEAR}", end="")
+                case 3:
+                    p.displayer.change_color_border()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_border_42()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_cell_42()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_empty()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_entry()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_exit()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_path()
+                    print(f"{CLEAR}", end="")
+                case 4:
+                    print(f"{CLEAR}", end="")
+                    break
+                case _:
+                    print(f"{CLEAR}", end="")
+                    print(
+                        f"{RED}The number selected must be between"
+                        f" 1 and {len(colors)}{RESET}")
+        except ValueError:
+            print(f"{CLEAR}", end="")
+            print(f"{RED}The selection has to be a number{RESET}")
+
+
+def main() -> None:
+    menu()
 
 
 if __name__ == "__main__":
