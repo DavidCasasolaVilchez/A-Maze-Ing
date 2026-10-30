@@ -7,13 +7,28 @@ from Model.Enums.Cardinal import Cardinal
 from Model.Enums.TypeCell import TypeCell
 from Model.Movement import Movement
 from Utils.GoBack import go_back
-from Utils.Colors import RESET
+from Utils.Colors import (
+    BLACK, BLUE, BRIGHT_MAGENTA, BRIGHT_RED, CYAN, GREEN, MAGENTA, RED,
+    RESET, WHITE, YELLOW
+)
 from Model.Cell import Cell
 from random import Random
-import time
+import curses
+import re
 
 
 class Panel():
+    _ANSI_COLOR_CODES: dict[str, int] = {
+        BLACK: curses.COLOR_BLACK,
+        RED: curses.COLOR_RED,
+        GREEN: curses.COLOR_GREEN,
+        YELLOW: curses.COLOR_YELLOW,
+        BLUE: curses.COLOR_BLUE,
+        MAGENTA: curses.COLOR_MAGENTA,
+        CYAN: curses.COLOR_CYAN,
+        WHITE: curses.COLOR_WHITE,
+    }
+
     def __init__(
             self,
             map: list[list[Cell]],
@@ -138,7 +153,7 @@ class Panel():
                     if value > 2:
                         cell.break_random_valid_wall(self.rnd)
 
-    def display_ascii(self, path_until: int) -> str:
+    def get_ascii(self, path_until: int) -> str:
         complete_line: str = ""
         for y, line in enumerate(self.map):
             top_line = ""
@@ -208,9 +223,18 @@ class Panel():
                 else:
                     middle_line += (f"{self.displayer.color_empty}"
                                     f"{self.displayer.empty_wall}{RESET}")
-                if cell == self.start_cell:
+                if cell.actual:
+                    middle_line += (f"{self.displayer.color_actual}"
+                                    f"{self.displayer.actual}{RESET}")
+                elif cell == self.start_cell:
                     middle_line += (f"{self.displayer.color_entry}"
                                     f"{self.displayer.entry}{RESET}")
+                elif cell.player_path and cell.type != TypeCell.PATH:
+                    middle_line += (f"{self.displayer.color_error_path}"
+                                    f"{self.displayer.player_path}{RESET}")
+                elif cell.player_path:
+                    middle_line += (f"{self.displayer.color_player_path}"
+                                    f"{self.displayer.player_path}{RESET}")
                 elif cell == self.end_cell:
                     middle_line += (f"{self.displayer.color_exit}"
                                     f"{self.displayer.exit}{RESET}")
@@ -229,14 +253,8 @@ class Panel():
             else:
                 middle_line += (f"{self.displayer.color_empty}"
                                 f"{self.displayer.empty_wall}{RESET}")
-            complete_line += top_line
-            complete_line += middle_line
-            print(top_line)
-            if path_until == -1:
-                time.sleep(0.03)
-            print(middle_line)
-            if path_until == -1:
-                time.sleep(0.03)
+            complete_line += f"{top_line}\n"
+            complete_line += f"{middle_line}\n"
         bottom_line = ""
         for cell in self.map[-1]:
             bottom_line += (f"{self.displayer.color_border}"
@@ -249,10 +267,13 @@ class Panel():
                                 f"{self.displayer.empty_floor}{RESET}")
         bottom_line += (f"{self.displayer.color_border}"
                         f"{self.displayer.corner}{RESET}")
-        complete_line += bottom_line
-        print(bottom_line)
-
+        complete_line += f"{bottom_line}\n"
         return complete_line
+
+    def display_ascii(self, path_until: int) -> str:
+        complete: str = self.get_ascii(path_until)
+        print(complete)
+        return complete
 
     def all_viewed(self) -> bool:
         for row in self.map:
@@ -467,3 +488,119 @@ class Panel():
 
     def cells_only(self, cells: list[tuple[Cell, bool]]) -> list[Cell]:
         return [cell for cell, _ in cells]
+
+    def try_advance(self, actual: Cell, move: Movement) -> Cell:
+        if not actual.is_valid_movement(move):
+            raise Exception
+        actual.actual = False
+        actual = self.get_cell(move.direction, actual.position)
+        actual.actual = True
+        actual.player_path = True
+        return actual
+
+    def try_solve(self) -> bool:
+        actual: Cell = self.start_cell
+        actual.actual = True
+        actual.player_path = True
+        self.refill_playable_map()
+
+        stdscr = curses.initscr()
+
+        try:
+            curses.start_color()
+            curses.use_default_colors()
+            stdscr.keypad(True)
+            curses.noecho()
+            curses.cbreak()
+            self.init_curses_colors()
+
+            while actual.type != TypeCell.END:
+                self.display_curses(stdscr, 0)
+                key = stdscr.getch()
+                try:
+                    match key:
+                        case curses.KEY_UP:
+                            move = Movement((-1, 0), Cardinal.N)
+                            actual = self.try_advance(actual, move)
+                        case curses.KEY_DOWN:
+                            move = Movement((1, 0), Cardinal.S)
+                            actual = self.try_advance(actual, move)
+                        case curses.KEY_LEFT:
+                            move = Movement((0, -1), Cardinal.W)
+                            actual = self.try_advance(actual, move)
+                        case curses.KEY_RIGHT:
+                            move = Movement((0, 1), Cardinal.E)
+                            actual = self.try_advance(actual, move)
+                        case curses.KEY_ENTER | 10 | 13:
+                            self.refill_playable_map()
+                            return False
+                except Exception:
+                    self.display_curses(
+                        stdscr,
+                        0,
+                        "Invalid movement"
+                    )
+            return True
+        finally:
+            curses.nocbreak()
+            curses.echo()
+            stdscr.keypad(False)
+            curses.endwin()
+
+    def init_curses_colors(self) -> None:
+        for pair, curses_color in enumerate(
+                self._ANSI_COLOR_CODES.values(), start=1):
+            curses.init_pair(pair, curses_color, -1)
+
+    def curses_attribute(self, ansi_color: str) -> int:
+        color_pairs: dict[str, int] = {
+            color: pair
+            for pair, color in enumerate(self._ANSI_COLOR_CODES, start=1)
+        }
+        bright_colors: dict[str, tuple[str, int]] = {
+            BRIGHT_RED: (RED, curses.A_BOLD),
+            BRIGHT_MAGENTA: (MAGENTA, curses.A_BOLD),
+        }
+        if ansi_color == RESET:
+            return curses.color_pair(0)
+        if ansi_color in bright_colors:
+            base_color, attribute = bright_colors[ansi_color]
+            return curses.color_pair(color_pairs[base_color]) | attribute
+        return curses.color_pair(color_pairs[ansi_color])
+
+    def display_curses(
+            self,
+            stdsrc: curses.window,
+            path_until: int,
+            status: str = ""
+            ) -> None:
+        complete: str = self.get_ascii(path_until)
+        lines: list[str] = complete.splitlines()
+        stdsrc.clear()
+        ansi_pattern = re.compile(r"(\033\[[0-9;]*m)")
+        for row, line in enumerate(lines):
+            column = 0
+            attribute = curses.color_pair(0)
+            for part in ansi_pattern.split(line):
+                if not part:
+                    continue
+                if ansi_pattern.fullmatch(part):
+                    attribute = self.curses_attribute(part)
+                else:
+                    stdsrc.addstr(row, column, part, attribute)
+                    column += len(part)
+        stdsrc.addstr(
+            len(lines) + 1,
+            0,
+            "Move yourself using the arrows ['ENTER' for exit]"
+        )
+        if status:
+            stdsrc.addstr(len(lines) + 2, 0, status)
+        stdsrc.refresh()
+
+    def refill_playable_map(self) -> None:
+        for y in self.map:
+            for x in y:
+                x.actual = False
+                x.player_path = False
+        self.start_cell.actual = True

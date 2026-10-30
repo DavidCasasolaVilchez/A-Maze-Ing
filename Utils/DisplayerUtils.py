@@ -1,6 +1,6 @@
 from Utils.Colors import RESET, CYAN, YELLOW, RED, WHITE, BLACK, MAGENTA, BLUE
 from Model.Enums.DisplayMode import DisplayMode
-from Utils.Colors import colors, CLEAR
+from Utils.Colors import colors, CLEAR, BRIGHT_MAGENTA, BRIGHT_RED
 
 
 class DisplayerUtils():
@@ -16,7 +16,10 @@ class DisplayerUtils():
                  ewall: str,
                  entry: str,
                  exit: str,
-                 c42: str):
+                 c42: str,
+                 actual: str,
+                 player_path: str):
+        self.color_error_path: str = RED
         self.color_path: str = BLUE
         self.color_border_42: str = MAGENTA
         self.color_cell_42: str = CYAN
@@ -24,6 +27,8 @@ class DisplayerUtils():
         self.color_empty: str = WHITE
         self.color_entry: str = YELLOW
         self.color_exit: str = RED
+        self.color_actual: str = BRIGHT_RED
+        self.color_player_path: str = BRIGHT_MAGENTA
         self.path: str = path
         self.floor42: str = floor42
         self.wall42: str = wall42
@@ -35,6 +40,8 @@ class DisplayerUtils():
         self.empty_wall: str = ewall
         self.entry: str = entry
         self.exit: str = exit
+        self.actual: str = actual
+        self.player_path: str = player_path
         self.c42: str = c42
 
     @staticmethod
@@ -51,6 +58,8 @@ class DisplayerUtils():
         entry: str
         exit: str
         c42: str
+        actual: str
+        player_path: str
         if mode == DisplayMode.COMPLETE:
             path = "██"
             floor42 = "██"
@@ -64,6 +73,8 @@ class DisplayerUtils():
             entry = "██"
             exit = "██"
             c42 = "▒▒"
+            actual = "██"
+            player_path = "██"
         else:
             path = " ■ "
             floor42 = "---"
@@ -77,9 +88,11 @@ class DisplayerUtils():
             entry = " ■ "
             exit = " ■ "
             c42 = " ■ "
+            actual = " ■ "
+            player_path = " ■ "
         return DisplayerUtils(
             path, floor42, corner42, wall42, corner, floor, wall, empty_floor,
-            empty_wall, entry, exit, c42)
+            empty_wall, entry, exit, actual, player_path, c42)
 
     @staticmethod
     def _display_color_selector(obj: str) -> str:
@@ -103,6 +116,14 @@ class DisplayerUtils():
 
     def change_color_path(self) -> None:
         self.color_path = DisplayerUtils._display_color_selector("path")
+
+    def change_color_player_path(self) -> None:
+        self.color_player_path = DisplayerUtils._display_color_selector(
+            "player path")
+
+    def change_color_actual(self) -> None:
+        self.color_actual = DisplayerUtils._display_color_selector(
+            "actual cell")
 
     def change_color_border_42(self) -> None:
         self.color_border_42 = DisplayerUtils._display_color_selector(

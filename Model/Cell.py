@@ -1,6 +1,7 @@
 from Model.Exceptions.InvalidCell import InvalidCell
 from Model.Enums.TypeCell import TypeCell
 from Model.Enums.Cardinal import Cardinal
+from Model.Movement import Movement
 from typing import TYPE_CHECKING
 from Model.Walls import Walls
 from random import Random
@@ -28,6 +29,8 @@ class Cell:
         self.view_from_end: bool = view_from_end
         self.map: Optional["Panel"] = map
         self.path: int = path
+        self.player_path: bool = False
+        self.actual: bool = False
 
     @staticmethod
     def create_base_cell(position: tuple[int, int],
@@ -123,3 +126,17 @@ class Cell:
         if len(valid_movements) > 0:
             dir: Cardinal = rng.choice(valid_movements)
             self.break_wall(dir)
+
+    def is_valid_movement(self, move: Movement) -> bool:
+        new_cell: tuple[int, int] = tuple(
+            x + y for x, y in zip(self.position, move.move))
+        if (
+            new_cell[0] < self.map.size[0] and new_cell[0] >= 0 and
+            new_cell[1] < self.map.size[1] and new_cell[1] >= 0 and
+            not self.map.map[self.position[0]][self.position[1]]
+            .state.wall_exist(move.direction) and
+            not self.map.map[new_cell[0]][new_cell[1]].type ==
+            TypeCell.CLOSED42
+        ):
+            return True
+        return False

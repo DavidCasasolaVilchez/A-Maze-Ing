@@ -2,8 +2,9 @@ from Utils.Colors import GREEN, RESET, RED, CLEAR, colors
 from Utils.PanelToTxt import PanelToTxt
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
-import sys
+import random
 import time
+import sys
 
 
 def menu(config_file: str) -> None:
@@ -18,9 +19,12 @@ def menu(config_file: str) -> None:
     assert args.output_file is not None
     options: list[tuple[int, str]] = [
         (1, "1. Re-generate a new maze"),
-        (2, "2. Show / Hide the shortest path"),
-        (3, "3. Select maze colors"),
-        (4, "4. Quit")
+        (2, "2. Generate maze with random entry and exit"),
+        (3, "3. Show / Hide the shortest path"),
+        (4, "4. Select maze colors"),
+        (5, "5. Try to solve it by yourself"),
+        (6, "6. Try to solve a new maze by yourself"),
+        (7, "7. Quit")
     ]
 
     p: Panel = Panel.create_base(
@@ -35,7 +39,7 @@ def menu(config_file: str) -> None:
     path: bool = True
     retry: bool = True
     selection: int = 0
-    while selection != 4:
+    while selection != 7:
         try:
             if retry:
                 retry = False
@@ -50,7 +54,7 @@ def menu(config_file: str) -> None:
             print("=== A-Maze-ing ===")
             for i in range(len(options)):
                 print(options[i][1])
-            selection = int(input(f"{GREEN}Choice? (1/4): {RESET}"))
+            selection = int(input(f"{GREEN}Choice? (1/7): {RESET}"))
             match selection:
                 case 1:
                     p = Panel.create_base(
@@ -66,9 +70,24 @@ def menu(config_file: str) -> None:
                     retry = True
                     print(f"{CLEAR}", end="")
                 case 2:
-                    path = not path
+                    p = Panel.create_base(
+                        (args.height, args.width),
+                        args.perfect,
+                        (random.randint(0, p.size[0]),
+                         random.randint(0, p.size[1])),
+                        (random.randint(0, p.size[0]),
+                         random.randint(0, p.size[1])),
+                        args.seed * int(time.time()),
+                        args.display_mode,
+                        0
+                    )
+                    path = True
+                    retry = True
                     print(f"{CLEAR}", end="")
                 case 3:
+                    path = not path
+                    print(f"{CLEAR}", end="")
+                case 4:
                     p.displayer.change_color_border()
                     print(f"{CLEAR}", end="")
                     p.displayer.change_color_border_42()
@@ -83,7 +102,39 @@ def menu(config_file: str) -> None:
                     print(f"{CLEAR}", end="")
                     p.displayer.change_color_path()
                     print(f"{CLEAR}", end="")
-                case 4:
+                    p.displayer.change_color_actual()
+                    print(f"{CLEAR}", end="")
+                    p.displayer.change_color_player_path()
+                    print(f"{CLEAR}", end="")
+                case 5:
+                    if p.try_solve():
+                        print(
+                            f"{GREEN}Congratulations!"
+                            f" You find the exit{RESET}")
+                        time.sleep(2)
+                    print(f"{CLEAR}", end="")
+                case 6:
+                    p = Panel.create_base(
+                        (args.height, args.width),
+                        args.perfect,
+                        (random.randint(0, p.size[0]),
+                         random.randint(0, p.size[1])),
+                        (random.randint(0, p.size[0]),
+                         random.randint(0, p.size[1])),
+                        args.seed * int(time.time()),
+                        args.display_mode,
+                        0
+                    )
+                    p.make_maze()
+                    PanelToTxt(p, p.solution, args.output_file)
+                    if p.try_solve():
+                        print(f"{CLEAR}", end="")
+                        print(
+                            f"{GREEN}Congratulations!"
+                            f" You find the exit{RESET}")
+                        time.sleep(2)
+                    print(f"{CLEAR}", end="")
+                case 7:
                     print(f"{CLEAR}", end="")
                     break
                 case _:
