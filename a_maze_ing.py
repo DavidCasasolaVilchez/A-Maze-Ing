@@ -57,7 +57,7 @@ def menu() -> None:
                         args.perfect,
                         args.entry,
                         args.exit,
-                        args.seed,
+                        args.seed * time.time(),
                         args.display_mode,
                         0
                     )

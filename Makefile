@@ -5,7 +5,7 @@ VENV = venv
 PYTHON = $(VENV)/bin/python3
 
 run: $(VENV)/bin/activate
-	$(PYTHON) main.py
+	$(PYTHON) a_maze_ing.py
 
 $(VENV)/bin/activate:
 	python3 -m venv $(VENV)
