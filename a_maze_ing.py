@@ -45,7 +45,7 @@ def menu() -> None:
                 for step in range(p.path_cell_count + 1):
                     print(f"{CLEAR}", end="")
                     p.display_ascii(step)
-                    time.sleep(0.08)
+                    time.sleep(0.025)
             print("=== A-Maze-ing ===")
             for i in range(len(options)):
                 print(options[i][1])
@@ -57,7 +57,7 @@ def menu() -> None:
                         args.perfect,
                         args.entry,
                         args.exit,
-                        args.seed * time.time(),
+                        args.seed * int(time.time()),
                         args.display_mode,
                         0
                     )
