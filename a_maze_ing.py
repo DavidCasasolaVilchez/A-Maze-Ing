@@ -2,11 +2,12 @@ from Utils.Colors import GREEN, RESET, RED, CLEAR, colors
 from Utils.PanelToTxt import PanelToTxt
 from Utils.ArgsParser import ArgsParser
 from Model.Panel import Panel
+import sys
 import time
 
 
-def menu() -> None:
-    args: ArgsParser = ArgsParser("config.txt")
+def menu(config_file: str) -> None:
+    args: ArgsParser = ArgsParser(config_file)
     assert args.width is not None
     assert args.height is not None
     assert args.entry is not None
@@ -96,7 +97,10 @@ def menu() -> None:
 
 
 def main() -> None:
-    menu()
+    if len(sys.argv) == 2:
+        menu(sys.argv[1])
+    else:
+        print("You have to include a valid configuration file in arguments")
 
 
 if __name__ == "__main__":

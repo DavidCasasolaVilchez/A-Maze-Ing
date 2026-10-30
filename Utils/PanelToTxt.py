@@ -7,15 +7,17 @@ def PanelToTxt(panel: Panel, steps: str, file_name: str) -> None:
         pass
     for line in range(panel.size[0]):
         for row in range(panel.size[1]):
-            with open("result.txt", "a", encoding="utf-8") as text:
+            with open(file_name, "a", encoding="utf-8") as text:
                 text.write(ParsePanel(panel.map[line][row]))
-        with open("result.txt", "a", encoding="utf-8") as text:
+        with open(file_name, "a", encoding="utf-8") as text:
             text.write("\n")
-    with open("result.txt", "a", encoding="utf-8") as text:
+    with open(file_name, "a", encoding="utf-8") as text:
+        entry: tuple[int, int] = panel.start_cell.position
+        exit: tuple[int, int] = panel.end_cell.position
         text.write("\n")
-        text.write(str(panel.start_cell.position) + "    #entry (x,y)\n")
-        text.write(str(panel.end_cell.position) + "    #exit (x,y)\n")
-        text.write(steps + "\n")
+        text.write(f"{entry[0]},{entry[1]}\n")
+        text.write(f"{exit[0]},{exit[1]}\n")
+        text.write(f"{steps}\n")
 
 
 def ParsePanel(cell: Cell) -> str:

@@ -17,10 +17,12 @@ imperfectos, colores ANSI, visualización del camino y exportación a
 
 ```text
 develop/
-├── main.py                 # Menú principal
+├── a_maze_ing.py           # Menú principal y punto de entrada
+├── a-maze-ing.sh           # Ejecución desde una terminal externa
 ├── config.txt              # Configuración por defecto
 ├── default_config.txt      # Plantilla
-├── Makefile                # Entorno virtual y ejecución
+├── requirements.txt        # Dependencias de desarrollo congeladas
+├── Makefile                # Entorno virtual, ejecución, depuración y lint
 ├── Model/
 │   ├── Cell.py             # Celdas y paredes
 │   ├── Panel.py            # Generación y resolución
@@ -45,6 +47,8 @@ develop/
 - Una terminal compatible con ASCII y colores ANSI.
 
 No hay dependencias externas; se utiliza la biblioteca estándar de Python.
+El `Makefile` instala `mypy`, `flake8` y `pudb` para el análisis, linting y
+depuración del proyecto.
 
 ### Instalación y ejecución
 
@@ -53,14 +57,32 @@ cd amazing/develop
 make run
 ```
 
-`make run` crea `venv/` y ejecuta `main.py`. También puede ejecutarse
-manualmente con:
+`make run` crea `venv/`, instala las herramientas de desarrollo definidas en
+el `Makefile`, actualiza `requirements.txt` y ejecuta `a_maze_ing.py`. También
+puede ejecutarse manualmente con:
 
 ```bash
-python3 main.py
+python3 a_maze_ing.py
 ```
 
-Para ejecutarlo a traves de una terminal externa ha de ejecutarse como programa con el archivo `a-maze-ing.sh`
+Para ejecutarlo desde una terminal externa, puede utilizarse el script:
+
+```bash
+./a-maze-ing.sh
+```
+
+El `Makefile` también incluye objetivos para depurar y revisar el código:
+
+```bash
+make debug       # Ejecuta el programa con pudb
+make lint        # Ejecuta mypy y flake8
+make lint-strict # Ejecuta mypy en modo estricto y flake8
+make execute     # Ejecuta a-maze-ing.sh
+```
+
+La ruta más corta se muestra mediante una animación progresiva. Al regenerar
+el laberinto se utiliza una semilla combinada con la hora actual para obtener
+una nueva generación.
 
 El menú permite:
 
@@ -69,7 +91,7 @@ El menú permite:
 3. Cambiar los colores.
 4. Salir.
 
-Para limpiar el entorno, las cachés y el resultado:
+Para limpiar el entorno virtual, las cachés y el resultado:
 
 ```bash
 make clean
@@ -102,8 +124,9 @@ DISPLAY_MODE=complete
 | `DISPLAY_MODE` | `complete` o `asciibase` | Modo de visualización. |
 
 `default_config.txt` contiene las mismas claves sin valores y sirve como
-plantilla. Actualmente `PanelToTxt` genera siempre `result.txt`; el valor de
-`OUTPUT_FILE` se valida, pero todavía no cambia ese nombre.
+plantilla. `OUTPUT_FILE` se valida y se crea o vacía al iniciar la exportación.
+La implementación actual escribe el contenido de la cuadrícula en
+`result.txt`.
 
 ## Algoritmo de generación del laberinto
 
@@ -143,6 +166,7 @@ depurar y comparar resultados.
 - Laberintos perfectos e imperfectos mediante `PERFECT`.
 - Patrón central de 42 con un color diferenciado.
 - Mostrar u ocultar la solución desde el menú.
+- Animación de la ruta más corta durante la presentación.
 - Modos `complete` y `asciibase`.
 - Cambio interactivo de colores de bordes, entrada, salida, camino y figura.
 - Exportación de la cuadrícula, coordenadas y pasos a `result.txt`.
@@ -184,7 +208,8 @@ dimensiones límite, coordenadas inválidas y resolución.
 ### Herramientas utilizadas
 
 - Python y su biblioteca estándar.
-- `make` para automatizar el entorno virtual y la ejecución.
+- `make` para automatizar el entorno virtual, la instalación y la ejecución.
+- `mypy`, `flake8` y `pudb` para tipado, linting y depuración.
 - Git para el control de versiones.
 - Terminal ANSI para la visualización coloreada.
 - Editor/IDE y herramientas de análisis estático para inspección y depuración.

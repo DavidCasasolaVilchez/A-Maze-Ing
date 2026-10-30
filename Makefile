@@ -6,6 +6,7 @@ NAME = a_maze_ing.py
 VENV = venv
 PYTHON = $(VENV)/bin/python3
 PYTHON_FLAG = -m
+ARGS ?= config.txt
 
 # install
 PIP = pip
@@ -31,6 +32,7 @@ ECHO = echo
 # clean
 RM = rm
 RMFLAGS = -rf
+OUTPUT_FILE := $(shell grep '^OUTPUT_FILE=' $(ARGS) | sed 's/^OUTPUT_FILE=//')
 
 # execute
 EXECUTE_FILE = a-maze-ing.sh
@@ -44,11 +46,11 @@ install: $(VENV)/bin/activate
 
 
 run: $(VENV)/bin/activate install
-	$(PYTHON) $(NAME)
+	$(PYTHON) $(NAME) $(ARGS)
 
 
 debug: $(VENV)/bin/activate install
-	$(PYTHON) $(PYTHON_FLAG) $(DEBUG) $(NAME)
+	$(PYTHON) $(PYTHON_FLAG) $(DEBUG) $(NAME) $(ARGS)
 
 
 lint: $(VENV)/bin/activate install
@@ -76,7 +78,7 @@ clean:
 	find . -type d -name '__pycache__' -prune -exec $(RM) $(RMFLAGS) -- {} +
 	find . -type d -name '.mypy_cache' -prune -exec $(RM) $(RMFLAGS) -- {} +
 	$(RM) $(RMFLAGS) $(VENV)
-	$(RM) $(RMFLAGS) result.txt
+	$(RM) $(RMFLAGS) $(OUTPUT_FILE)
 
 
 re: clean run
