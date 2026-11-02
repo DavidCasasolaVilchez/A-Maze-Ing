@@ -128,7 +128,9 @@ class Cell:
             self.break_wall(dir)
 
     def is_valid_movement(self, move: Movement) -> bool:
-        new_cell: tuple[int, int] = tuple(
+        if self.map is None:
+            return False
+        new_cell = tuple(
             x + y for x, y in zip(self.position, move.move))
         if (
             new_cell[0] < self.map.size[0] and new_cell[0] >= 0 and
